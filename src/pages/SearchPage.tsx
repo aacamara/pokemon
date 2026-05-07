@@ -14,7 +14,7 @@ import {
   AtomicQueryError,
 } from '@coveo/atomic-react';
 import type { SearchEngine } from '@coveo/headless';
-import { createPokedexEngine } from '../coveo/engine';
+import { createPokedexEngine, POKEMON_FIELDS } from '../coveo/engine';
 import ResultTemplate from '../components/ResultTemplate';
 import AskPokedex from '../components/AskPokedex';
 
@@ -54,7 +54,10 @@ export default function SearchPage() {
   }
 
   return (
-    <AtomicSearchInterface engine={engine}>
+    <AtomicSearchInterface
+      engine={engine}
+      fieldsToInclude={[...POKEMON_FIELDS]}
+    >
       <div className="search-shell">
         <div className="search-bar-wrap">
           <AtomicSearchBox suggestionTimeout={500}>
