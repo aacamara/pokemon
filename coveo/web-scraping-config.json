@@ -16,28 +16,28 @@
         "path": "h1::text"
       },
       "pokemonnatdex": {
-        "type": "CSS",
-        "path": ".vitals-table strong::text"
+        "type": "XPATH",
+        "path": "(//th[normalize-space(text())='National №']/following-sibling::td/strong/text())[1]"
       },
       "pokemontypes": {
-        "type": "CSS",
-        "path": "a.type-icon::text"
+        "type": "XPATH",
+        "path": "//th[normalize-space(text())='Type']/following-sibling::td//a[contains(@href,'/type/')]/text()"
       },
       "pokemonspecies": {
         "type": "XPATH",
-        "path": "//th[normalize-space(text())='Species']/following-sibling::td/text()"
+        "path": "(//th[normalize-space(text())='Species']/following-sibling::td/text())[1]"
       },
       "pokemonheight": {
         "type": "XPATH",
-        "path": "//th[normalize-space(text())='Height']/following-sibling::td/text()"
+        "path": "(//th[normalize-space(text())='Height']/following-sibling::td/text())[1]"
       },
       "pokemonweight": {
         "type": "XPATH",
-        "path": "//th[normalize-space(text())='Weight']/following-sibling::td/text()"
+        "path": "(//th[normalize-space(text())='Weight']/following-sibling::td/text())[1]"
       },
       "pokemonabilities": {
-        "type": "CSS",
-        "path": ".vitals-table a[href*='/ability/']::text"
+        "type": "XPATH",
+        "path": "//th[normalize-space(text())='Abilities']/following-sibling::td//a[contains(@href,'/ability/')]/text()"
       },
       "pokemonimage": {
         "type": "CSS",
