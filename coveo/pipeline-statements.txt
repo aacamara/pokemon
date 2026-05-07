@@ -1,0 +1,18 @@
+# Paste these into the `Pokedex` query pipeline (Search > Query Pipelines > Pokedex > Edit components).
+# These are the statements I exercise in Topic 1's deck and demo.
+
+# Constrain every query to Pokémon sources (defensive — keeps a future test
+# source from leaking).
+$qf(expression: '@source==pokedex-full OR @source==pokedex-sandbox')
+
+# Boost legendary canon for "legendary" and similar queries.
+$qre(expression: '@pokemonname=="mewtwo" OR @pokemonname=="mew" OR @pokemonname=="lugia" OR @pokemonname=="ho-oh" OR @pokemonname=="rayquaza" OR @pokemonname=="dialga" OR @pokemonname=="palkia" OR @pokemonname=="giratina" OR @pokemonname=="arceus"', modifier: '300')
+
+# Synonyms (reduce keyword fragility).
+@thesaurus("legendary" => "mewtwo, mew, lugia, ho-oh, rayquaza, dialga, palkia, giratina, arceus, zekrom, reshiram, kyurem, xerneas, yveltal, zygarde, solgaleo, lunala, necrozma, zacian, zamazenta, eternatus, koraidon, miraidon")
+@thesaurus("starter"  => "bulbasaur, charmander, squirtle, chikorita, cyndaquil, totodile, treecko, torchic, mudkip, turtwig, chimchar, piplup, snivy, tepig, oshawott, chespin, fennekin, froakie, rowlet, litten, popplio, grookey, scorbunny, sobble, sprigatito, fuecoco, quaxly")
+@thesaurus("dragon-type" => '@pokemontypes==Dragon')
+@thesaurus("electric mouse" => "pikachu, raichu, pichu")
+
+# Featured query — when the user types just "pikachu".
+@featured(condition: 'when query is "pikachu"', expression: '@pokemonname=="pikachu"', boost: '1000')

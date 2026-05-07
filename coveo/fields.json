@@ -1,0 +1,11 @@
+[
+  { "name": "pokemonname",       "type": "STRING",  "facet": true,                 "sort": true,  "includeInQuery": true,  "includeInResults": true },
+  { "name": "pokemontypes",      "type": "STRING",  "multiValueFacet": true,       "multiValueFacetTokenizers": ";", "includeInQuery": true,  "includeInResults": true },
+  { "name": "pokemongeneration", "type": "LONG_64", "facet": true,                 "sort": true,  "includeInQuery": true,  "includeInResults": true },
+  { "name": "pokemonimage",      "type": "STRING",                                                                  "includeInResults": true },
+  { "name": "pokemonnatdex",     "type": "STRING",  "sort": true,                                                   "includeInQuery": true,  "includeInResults": true },
+  { "name": "pokemonspecies",    "type": "STRING",  "facet": true,                                                  "includeInResults": true },
+  { "name": "pokemonheight",     "type": "STRING",                                                                  "includeInResults": true },
+  { "name": "pokemonweight",     "type": "STRING",                                                                  "includeInResults": true },
+  { "name": "pokemonabilities",  "type": "STRING",  "multiValueFacet": true,       "multiValueFacetTokenizers": ";", "includeInResults": true }
+]

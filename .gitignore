@@ -1,0 +1,31 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+.env
+.env.local
+.env.*.local
+.vercel
+
+# Atomic static assets are re-copied on `npm install` via the postinstall hook;
+# keep them out of git so the repo stays small and reproducible.
+public/assets/
+public/lang/
+
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coveo FDE Challenge — Topic 2: Escalation &amp; Recovery · Aziz Camara</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f7f4ed;
+        --ink: #1a1a1a;
+        --ink-soft: #555;
+        --rule: #d8d2c1;
+        --accent: #c1272d;
+        --accent-soft: #f6e7e7;
+        --green: #2f6f3e;
+        --amber: #b97800;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        line-height: 1.5;
+      }
+      code, pre {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+      }
+      .deck {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0;
+      }
+      .slide {
+        min-height: 100vh;
+        padding: 80px 56px 96px 56px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 16px;
+        position: relative;
+        border-bottom: 1px solid var(--rule);
+        scroll-margin-top: 0;
+      }
+      .slide:last-child { border-bottom: none; }
+      .slide__num {
+        position: absolute;
+        top: 32px;
+        right: 56px;
+        font-family: 'Fraunces', serif;
+        font-style: italic;
+        color: var(--ink-soft);
+        font-size: 14px;
+        letter-spacing: 0.06em;
+      }
+      .slide__chapter {
+        position: absolute;
+        top: 32px;
+        left: 56px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 11px;
+        color: var(--ink-soft);
+      }
+      h1.title {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: clamp(40px, 6vw, 76px);
+        line-height: 1.05;
+        letter-spacing: -0.01em;
+        margin: 0 0 18px 0;
+      }
+      h1.title em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--accent);
+      }
+      h2 {
+        font-family: 'Fraunces', serif;
+        font-weight: 500;
+        font-size: 36px;
+        line-height: 1.15;
+        margin: 0 0 12px 0;
+        letter-spacing: -0.005em;
+      }
+      h3 {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--ink-soft);
+        margin: 0 0 8px 0;
+      }
+      p, li { font-size: 19px; line-height: 1.55; }
+      .lede {
+        font-family: 'Fraunces', serif;
+        font-size: 26px;
+        line-height: 1.35;
+        font-weight: 400;
+        color: var(--ink);
+        max-width: 38ch;
+      }
+      .meta {
+        font-size: 13px;
+        color: var(--ink-soft);
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+      }
+      ul.clean { list-style: none; padding: 0; margin: 0; }
+      ul.clean li { padding: 10px 0; border-top: 1px solid var(--rule); }
+      ul.clean li:first-child { border-top: none; }
+      ul.dot li {
+        position: relative;
+        padding-left: 22px;
+        margin-bottom: 8px;
+      }
+      ul.dot li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.7em;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      ul.steps { counter-reset: step; padding-left: 0; list-style: none; }
+      ul.steps li {
+        counter-increment: step;
+        padding: 12px 0 12px 56px;
+        position: relative;
+        border-top: 1px solid var(--rule);
+      }
+      ul.steps li:first-child { border-top: none; }
+      ul.steps li::before {
+        content: counter(step, decimal-leading-zero);
+        position: absolute;
+        left: 0;
+        top: 16px;
+        font-family: 'Fraunces', serif;
+        font-style: italic;
+        color: var(--accent);
+        font-size: 22px;
+      }
+      .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+      .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+      .card {
+        background: #fff;
+        border: 1px solid var(--rule);
+        padding: 22px;
+        border-radius: 6px;
+      }
+      .card h4 {
+        font-family: 'Fraunces', serif;
+        font-size: 22px;
+        margin: 0 0 6px 0;
+        font-weight: 500;
+      }
+      .card p {
+        margin: 0;
+        font-size: 15px;
+        color: var(--ink-soft);
+        line-height: 1.5;
+      }
+      pre.code {
+        background: #1a1a1a;
+        color: #f0e8d8;
+        font-size: 13px;
+        line-height: 1.45;
+        padding: 22px;
+        border-radius: 6px;
+        overflow: auto;
+        max-height: 60vh;
+      }
+      pre.email {
+        background: #fffdf6;
+        color: var(--ink);
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        line-height: 1.55;
+        padding: 24px;
+        border-radius: 6px;
+        border: 1px solid var(--rule);
+        white-space: pre-wrap;
+      }
+      .rule { height: 1px; background: var(--rule); margin: 24px 0; }
+      table { width: 100%; border-collapse: collapse; font-size: 15px; }
+      th, td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--rule);
+        vertical-align: top;
+      }
+      th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--ink-soft);
+      }
+      .accent-text { color: var(--accent); }
+      .green-text { color: var(--green); }
+      .amber-text { color: var(--amber); }
+      .nav {
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        background: rgba(247, 244, 237, 0.92);
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 13px;
+        color: var(--ink-soft);
+        backdrop-filter: blur(6px);
+      }
+      blockquote {
+        font-family: 'Fraunces', serif;
+        font-size: 30px;
+        line-height: 1.3;
+        font-style: italic;
+        color: var(--ink);
+        margin: 0;
+        padding-left: 24px;
+        border-left: 3px solid var(--accent);
+        max-width: 32ch;
+      }
+      .timeline {
+        display: grid;
+        grid-template-columns: 100px 1fr;
+        gap: 12px 18px;
+        align-items: baseline;
+      }
+      .timeline dt {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        color: var(--accent);
+        font-weight: 500;
+      }
+      .timeline dd {
+        margin: 0;
+        font-size: 16px;
+      }
+      @media (max-width: 720px) {
+        .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        .slide { padding: 56px 28px; }
+        .slide__num, .slide__chapter { left: 28px; right: 28px; top: 20px; }
+        .timeline { grid-template-columns: 1fr; }
+      }
+      @media print {
+        body { background: white; }
+        .slide {
+          page-break-after: always;
+          min-height: auto;
+          height: 100vh;
+          border-bottom: none;
+        }
+        .nav { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="deck">
+
+      <!-- 1. Cover -->
+      <section class="slide">
+        <div class="slide__num">01 · Cover</div>
+        <span class="meta">Senior Director, Technical Success · Topic 2 of 2</span>
+        <h1 class="title">A search platform<br/>that <em>fails</em> at peak.</h1>
+        <p class="lede">Escalation, root cause, recovery, and how I run the room from the moment the page fires.</p>
+        <div class="rule"></div>
+        <div class="meta">Aziz Camara · 25 minutes including Q&amp;A</div>
+      </section>
+
+      <!-- 2. The scenario, named -->
+      <section class="slide">
+        <div class="slide__chapter">Scenario</div>
+        <div class="slide__num">02</div>
+        <h2>The scenario, set in concrete.</h2>
+        <p>Customer "Acme Co." — top-decile commerce account, ~$1.2 M ARR. Their <code>storefront-search</code> hub is intermittently failing under Black Friday traffic. Their CEO has emailed our CRO. We are now twelve hours from doors-open in EU and twenty hours from US.</p>
+        <ul class="clean">
+          <li><strong>Symptoms.</strong> 5xx rate spiking to ~14 % during peak minutes; p95 latency 4.2 s vs. our 250 ms SLO; relevance complaints from agents on chat.</li>
+          <li><strong>Business impact.</strong> Estimated $40k/min in lost cart-conversion at peak. Their team has already drafted a postmortem talking-point: "Coveo can't handle our scale."</li>
+          <li><strong>The first call.</strong> Their CTO at 21:47 UTC. The CRO loops in our CEO.</li>
+        </ul>
+      </section>
+
+      <!-- 3. The frame -->
+      <section class="slide">
+        <div class="slide__chapter">Frame</div>
+        <div class="slide__num">03</div>
+        <h2>How I run the room.</h2>
+        <p class="lede">Five acts. Each one has a single job, a single deliverable, and a clock.</p>
+        <ul class="steps">
+          <li><strong>Triage.</strong> Stop the bleed. 0 → 15 min. <em>Deliverable: war room, severity, single number we anchor on.</em></li>
+          <li><strong>Root cause.</strong> Hypothesis tree, telemetry, repro. 15 min → 2 hrs. <em>Deliverable: the cause, with evidence we can show.</em></li>
+          <li><strong>Stabilize.</strong> Short-term remediation. Parallel to RCA. <em>Deliverable: degraded-but-stable.</em></li>
+          <li><strong>Communicate.</strong> Cadenced, structured, exec-readable. From minute one until close. <em>Deliverable: trust.</em></li>
+          <li><strong>Prevent.</strong> Postmortem, prevention plan, customer-facing 60-day commitment. <em>Deliverable: it doesn't happen again.</em></li>
+        </ul>
+      </section>
+
+      <!-- 4. Triage -->
+      <section class="slide">
+        <div class="slide__chapter">Act I · Triage</div>
+        <div class="slide__num">04</div>
+        <h2>Stop the bleed in 15 minutes.</h2>
+        <ul class="dot">
+          <li><strong>Severity gate, not severity guess.</strong> Customer-facing 5xx &gt; 5 % for &gt; 5 min on a top-decile account = SEV-1, no debate. SEV is set by the on-call FDE, not negotiated.</li>
+          <li><strong>One war room.</strong> Slack + bridge. I'm the IC. Roles named on first message: scribe, customer liaison, exec liaison, technical lead. <em>Anyone unnamed is a witness, not a participant.</em></li>
+          <li><strong>One number.</strong> The whole room anchors on a single metric — for this incident, customer-side 5xx rate on <code>storefront-search</code>. We don't argue about p99, ML scores, click-through, anything else, until it's flat.</li>
+          <li><strong>The first 5-minute sweep.</strong> Have we shipped anything in the last 24 h? Has the customer? Did a model just retrain? Did source-build status change? Three yes/no questions narrow the hypothesis tree in seconds.</li>
+        </ul>
+      </section>
+
+      <!-- 5. Triage timeline -->
+      <section class="slide">
+        <div class="slide__chapter">Act I · Triage</div>
+        <div class="slide__num">05</div>
+        <h2>The first 30 minutes, on the clock.</h2>
+        <dl class="timeline">
+          <dt>21:47</dt><dd>Customer CTO email. On-call FDE pages. SEV-1 declared.</dd>
+          <dt>21:49</dt><dd>War room open. Roles assigned. I'm IC.</dd>
+          <dt>21:51</dt><dd>Status page updated: <em>investigating</em>. Customer Slack DM acknowledged.</dd>
+          <dt>21:53</dt><dd>First exec update sent (template on slide 12). Cadence set: every 30 min until resolved.</dd>
+          <dt>21:55</dt><dd>Single-metric dashboard pinned in war room.</dd>
+          <dt>22:02</dt><dd>Three-question sweep done. Two yeses: customer pushed a pipeline statement at 21:30; ART model retrained at 21:35.</dd>
+          <dt>22:08</dt><dd>Mitigation in flight: pin pipeline to last-known-good revision.</dd>
+          <dt>22:14</dt><dd>5xx falls below 1 %. Customer confirms storefront recovered.</dd>
+        </dl>
+        <p class="meta">Stabilization — not resolution — was the first goal. The RCA continued for hours after the storefront recovered.</p>
+      </section>
+
+      <!-- 6. RCA framework -->
+      <section class="slide">
+        <div class="slide__chapter">Act II · RCA</div>
+        <div class="slide__num">06</div>
+        <h2>The hypothesis tree, named ahead of time.</h2>
+        <p>I refuse to "investigate widely" during a SEV-1. I run a hypothesis tree the team has rehearsed, and I close branches as fast as evidence lets me.</p>
+        <pre class="code">                   "search is failing"
+                            │
+        ┌───────────────────┼───────────────────┐
+   1. CAPACITY         2. DATA              3. CONFIG
+   • QPS regression   • bad source build   • pipeline statement
+   • runner pool      • broken mapping     • ML model swap
+   • upstream LB      • encoding shift     • search hub change
+                            │
+                       4. DEPENDENCY
+                       • CDN
+                       • auth provider
+                       • Coveo platform itself</pre>
+        <p>For each branch, I keep one telemetry pane and one repro recipe in the runbook. Branch-close criteria are also pre-written.</p>
+      </section>
+
+      <!-- 7. Telemetry -->
+      <section class="slide">
+        <div class="slide__chapter">Act II · RCA</div>
+        <div class="slide__num">07</div>
+        <h2>The telemetry stack we expected to need.</h2>
+        <div class="grid-2">
+          <div>
+            <h3>Coveo-side</h3>
+            <ul class="dot">
+              <li><strong>Search Usage Analytics</strong> — QPS by search hub, error-code histogram, p50/p95/p99.</li>
+              <li><strong>Source health</strong> — last successful build, document delta, indexer queue depth.</li>
+              <li><strong>Pipeline + ML status</strong> — last statement edit, last model retrain, model "Active" vs "Building."</li>
+              <li><strong>API latency</strong> — <code>/search/v2</code>, <code>/search/v3/passages</code>.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Customer-side</h3>
+            <ul class="dot">
+              <li><strong>Real-User Monitoring</strong> on the storefront search box.</li>
+              <li><strong>Edge logs</strong> at their CDN — request, status, geo, retry.</li>
+              <li><strong>App logs</strong> wrapping the Coveo client (request ID, retry count, fallback fired).</li>
+              <li><strong>Business KPI</strong> — cart-creation rate, the "did it actually move money" gate.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="meta">If the telemetry isn't joined on a request ID end-to-end, I treat that as a P1 follow-up regardless of root cause. You can't run RCA on hearsay.</p>
+      </section>
+
+      <!-- 8. Stabilize -->
+      <section class="slide">
+        <div class="slide__chapter">Act III · Stabilize</div>
+        <div class="slide__num">08</div>
+        <h2>Short-term remediation, ranked by reversibility.</h2>
+        <table>
+          <thead><tr><th>Move</th><th>Reversibility</th><th>Customer cost</th><th>When I reach for it</th></tr></thead>
+          <tbody>
+            <tr><td>Pin pipeline to last-known-good revision</td><td class="green-text">Instant</td><td class="green-text">None visible</td><td>Default — first move on suspected statement/model regression.</td></tr>
+            <tr><td>Rollback an ML model snapshot</td><td class="green-text">Instant</td><td class="amber-text">Relevance dips for ~hours</td><td>If the model retrained right before the spike.</td></tr>
+            <tr><td>Bump cache TTL at the edge</td><td class="green-text">Instant</td><td class="amber-text">Stale results for ~min</td><td>If the platform itself is degraded — buys us breathing room.</td></tr>
+            <tr><td>Shed traffic via query throttling</td><td class="amber-text">Manual</td><td class="accent-text">Some users see retries</td><td>Only when capacity is the actual cause.</td></tr>
+            <tr><td>Failover search-hub to a secondary pipeline</td><td class="amber-text">Manual</td><td class="amber-text">Different ranking</td><td>If a single pipeline is poisoned but the index is fine.</td></tr>
+            <tr><td>Cut over to <code>/search/v2</code> from <code>/v3/passages</code></td><td class="amber-text">Manual</td><td class="accent-text">Loses Passage Retrieval features</td><td>If a v3-only path is the broken one and v2 is healthy.</td></tr>
+          </tbody>
+        </table>
+        <p class="meta">Reach for the most reversible move first. Always.</p>
+      </section>
+
+      <!-- 9. Exec comms — frame -->
+      <section class="slide">
+        <div class="slide__chapter">Act IV · Comms</div>
+        <div class="slide__num">09</div>
+        <h2>Comms is a feature, not an afterthought.</h2>
+        <p class="lede">During SEV-1, the customer's confidence in <em>us</em> is itself a service that needs an SLO.</p>
+        <ul class="dot">
+          <li><strong>Cadence ladder.</strong> Customer technical lead = every 15 min. Customer CTO/CIO = every 30 min. Customer CEO/CRO = every hour. <em>The cadence is set in writing in message #1.</em></li>
+          <li><strong>Format ladder.</strong> Slack thread for the technical lead. Email + Slack for the CTO. Email-only for the CEO. Different surfaces, same source of truth.</li>
+          <li><strong>Format SIAN.</strong> <strong>S</strong>ituation · <strong>I</strong>mpact · <strong>A</strong>ction · <strong>N</strong>ext update. Four headers. No prose drift.</li>
+          <li><strong>What we say to the CEO is not what we say to the CTO.</strong> The CEO needs to know I'm an adult. The CTO needs to know I'm right.</li>
+        </ul>
+      </section>
+
+      <!-- 10. Exec comms — example email (CEO) -->
+      <section class="slide">
+        <div class="slide__chapter">Act IV · Comms</div>
+        <div class="slide__num">10</div>
+        <h2>Update #1 to the customer CEO, verbatim.</h2>
+        <pre class="email">From:    Aziz Camara &lt;aziz@coveo.com&gt;
+To:      sarah.hwang@acme.com (CEO)
+CC:      james.lee@acme.com (CTO), our CRO, our CEO
+Subject: Acme search · SEV-1 declared 21:47 UTC · update #1
+
+Sarah,
+
+Picking up your CTO's email at 21:47 UTC. Acknowledging this as our highest
+severity.
+
+S — At 21:35 UTC your storefront-search began returning 5xx errors at ~14 %
+of requests, with p95 at 4.2 s vs. our 250 ms SLO.
+
+I — During the affected window we estimate ~$40k/min of lost cart conversion
+based on your normal Black Friday baseline. Storefront browsing and cart
+checkout themselves are unaffected; the failure is scoped to the search box.
+
+A — War room open since 21:49. I am the incident commander. We are testing
+two specific causes (a pipeline change you made at 21:30 and an ML model
+retrain at 21:35). We pinned the pipeline to its 21:00 revision two minutes
+ago and 5xx is now &lt; 1 %. We are continuing to drive to root cause and to
+make sure this does not recur tonight.
+
+N — Next update at 22:30 UTC, then every 30 min until close. I will copy
+James on the technical thread.
+
+Aziz Camara
+Senior Director, Technical Success</pre>
+        <p class="meta">Plain English. No "we are committed to excellence." Specific numbers, named actor, named time.</p>
+      </section>
+
+      <!-- 11. Exec comms — close email -->
+      <section class="slide">
+        <div class="slide__chapter">Act IV · Comms</div>
+        <div class="slide__num">11</div>
+        <h2>The close-out, the one that sticks.</h2>
+        <pre class="email">Subject: Acme search · resolved 23:14 UTC · 87 min · 1 of 1
+
+Sarah, James,
+
+Resolved at 23:14 UTC. Total customer-impacting time: 87 minutes.
+
+Cause — Your 21:30 UTC pipeline edit added a $qre boost that conflicted
+with the ART model retrain at 21:35. The combined ranking exhausted a
+per-query cache budget at peak QPS, expressed as 5xx. Neither change alone
+would have caused this; the interaction did. We have evidence in the
+attached request-ID trace.
+
+Fix — We pinned to 21:00 revision and that recovered the storefront. The
+correct fix is to either (a) gate ART retrains to off-peak windows, or
+(b) replace the $qre with an @featured statement that doesn't fight ART.
+We will recommend (a) tonight and (b) tomorrow.
+
+Recurrence — We are committing to:
+  • a Black-Friday-week ML retrain freeze across all your pipelines by
+    end of day tomorrow;
+  • a synthetic load test against your production pipeline before each
+    of your remaining peak events;
+  • a joint runbook addendum so your team knows how to pin a pipeline
+    revision in &lt; 60 seconds;
+  • a 60-day post-incident review with shared OKRs (slide 14).
+
+I will be on your daily standup tomorrow. Postmortem doc attached, draft.
+
+Aziz</pre>
+      </section>
+
+      <!-- 12. Internal comms -->
+      <section class="slide">
+        <div class="slide__chapter">Act IV · Comms</div>
+        <div class="slide__num">12</div>
+        <h2>What we say internally is different.</h2>
+        <p>I am unsparing internally and humble externally. Two different audiences, two different sets of words, the same set of facts.</p>
+        <div class="grid-2">
+          <div>
+            <h3>To Coveo execs (real-time)</h3>
+            <ul class="dot">
+              <li>SEV-1, top-decile account, customer-CEO involvement.</li>
+              <li>Estimated revenue impact at the customer (signal for our exposure).</li>
+              <li>What I've already done, what I'm about to do.</li>
+              <li>What I need them to do (or, more often: please don't call this customer right now — let me run the room).</li>
+            </ul>
+          </div>
+          <div>
+            <h3>To the FDE / TS team (real-time)</h3>
+            <ul class="dot">
+              <li>Single Slack thread. Append-only. Time-stamped.</li>
+              <li>One channel for IC commands; another for chatter. Don't mix.</li>
+              <li>"What did we just learn?" check every 15 minutes.</li>
+              <li>End-of-incident: a 24-hour rule — postmortem draft within 24 h, blameless, named contributors named.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13. Prevention — the customer side -->
+      <section class="slide">
+        <div class="slide__chapter">Act V · Prevent</div>
+        <div class="slide__num">13</div>
+        <h2>The 60-day post-incident commitment, on the customer side.</h2>
+        <ul class="dot">
+          <li><strong>Joint capacity model.</strong> Their UA-derived peak QPS, our headroom, our SLO. One spreadsheet, owned jointly, refreshed quarterly.</li>
+          <li><strong>Pre-event runbook.</strong> Each of their named peak events (Black Friday, Cyber Monday, Boxing Day, mid-season) gets a one-page runbook. Pin pipeline. Freeze ML retrain. Synthetic load test. Pager rotation.</li>
+          <li><strong>Joint GameDay.</strong> Twice a year, we deliberately break their staging pipeline together. Their on-call answers a real page. Their CTO sees it work.</li>
+          <li><strong>Shared OKRs.</strong> Their CSAT on search, our SLO compliance, our time-to-mitigate, our time-to-RCA. One dashboard, owned jointly, reviewed monthly.</li>
+        </ul>
+        <blockquote>"We don't sell uptime. We sell trust. Uptime is just one of trust's downstream effects."</blockquote>
+      </section>
+
+      <!-- 14. Prevention — the Coveo side -->
+      <section class="slide">
+        <div class="slide__chapter">Act V · Prevent</div>
+        <div class="slide__num">14</div>
+        <h2>The systemic prevention plan, on our side.</h2>
+        <ul class="dot">
+          <li><strong>Error budgets per search hub.</strong> Burn the budget = an automatic ML retrain freeze + paged review. The platform refuses to be put into an unsafe state.</li>
+          <li><strong>Pipeline revision pinning as a feature.</strong> Customer-facing API: <code>POST /pipelines/:id/pin?revision=…</code>. Reverting a config has to be cheaper than calling me.</li>
+          <li><strong>"FDE on call" rotation.</strong> Not just engineering. A senior FDE is paged into every customer-facing SEV-1 from minute zero. The named-customer relationship is itself part of the mitigation.</li>
+          <li><strong>Runbook library as code.</strong> Every customer's peak-event runbook lives in Git, is reviewed quarterly, and is rehearsed on a GameDay. If it isn't rehearsed, it doesn't exist.</li>
+          <li><strong>Customer Success partnership.</strong> Every SEV-1 generates a postmortem that the named CSM owns the customer-facing version of. Engineering owns the technical version. Both versions ship in 24 h. <em>The CSM is in the war room from minute one</em> — that's the muscle most vendors miss.</li>
+        </ul>
+      </section>
+
+      <!-- 15. Why I run rooms this way -->
+      <section class="slide">
+        <div class="slide__chapter">Coda</div>
+        <div class="slide__num">15</div>
+        <h2>Why I run rooms this way.</h2>
+        <p class="lede">I'm not theorizing. CSCX.AI — the AI-native CS platform I'm building — sits on the same incident substrate.</p>
+        <ul class="dot">
+          <li>Multi-tenant, Supabase + GCP Cloud Run, 118 routes in production today, real customers, real SEV-2s with my name on them.</li>
+          <li>I've built the cadence ladder, the SIAN format, and the "what we say to the CEO" pattern <em>for myself</em> first. They're tools I trust because they've kept me sane.</li>
+          <li>I've also been the founder reading the vendor's "we are committed to excellence" email at 3 AM. I know what trust feels like — and what its absence feels like — from both sides of the war room.</li>
+        </ul>
+        <div class="rule"></div>
+        <blockquote>"A Director of Technical Success is in the room before the page fires, not after."</blockquote>
+      </section>
+
+      <!-- 16. Close -->
+      <section class="slide">
+        <div class="slide__chapter">Close</div>
+        <div class="slide__num">16</div>
+        <h1 class="title">Questions, then <em>scenarios</em>.</h1>
+        <p class="lede">Throw me an incident — let's run the room together for ten minutes.</p>
+        <div class="rule"></div>
+        <div class="meta">Aziz Camara · azizcamara2@gmail.com · linkedin.com/in/aziz1904</div>
+      </section>
+
+    </div>
+
+    <div class="nav" id="nav">slide 1 / 16 · scroll or arrow keys</div>
+
+    <script>
+      const nav = document.getElementById('nav');
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      function update() {
+        const center = window.scrollY + window.innerHeight / 2;
+        let idx = 1;
+        for (let i = 0; i < slides.length; i++) {
+          if (center >= slides[i].offsetTop) idx = i + 1;
+        }
+        nav.textContent = `slide ${idx} / ${slides.length} · scroll or arrow keys`;
+      }
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
+          e.preventDefault();
+          const center = window.scrollY + window.innerHeight / 2;
+          const next = slides.find((s) => s.offsetTop > center + 100);
+          if (next) next.scrollIntoView({ behavior: 'smooth' });
+        }
+        if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+          e.preventDefault();
+          const center = window.scrollY + window.innerHeight / 2;
+          const prev = [...slides].reverse().find((s) => s.offsetTop < center - 100);
+          if (prev) prev.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+      update();
+    </script>
+  </body>
+</html>

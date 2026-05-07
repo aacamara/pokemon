@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coveo FDE Challenge — Topic 1: Architecture Deep Dive · Aziz Camara</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f7f4ed;
+        --ink: #1a1a1a;
+        --ink-soft: #555;
+        --rule: #d8d2c1;
+        --accent: #c1272d;
+        --accent-soft: #f6e7e7;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: 'Inter', sans-serif;
+        font-size: 18px;
+        line-height: 1.5;
+      }
+      code, pre {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+      }
+      .deck {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0;
+      }
+      .slide {
+        min-height: 100vh;
+        padding: 80px 56px 96px 56px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 16px;
+        position: relative;
+        border-bottom: 1px solid var(--rule);
+        scroll-margin-top: 0;
+      }
+      .slide:last-child { border-bottom: none; }
+      .slide__num {
+        position: absolute;
+        top: 32px;
+        right: 56px;
+        font-family: 'Fraunces', serif;
+        font-style: italic;
+        color: var(--ink-soft);
+        font-size: 14px;
+        letter-spacing: 0.06em;
+      }
+      .slide__chapter {
+        position: absolute;
+        top: 32px;
+        left: 56px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 11px;
+        color: var(--ink-soft);
+      }
+      h1.title {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: clamp(40px, 6vw, 76px);
+        line-height: 1.05;
+        letter-spacing: -0.01em;
+        margin: 0 0 18px 0;
+      }
+      h1.title em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--accent);
+      }
+      h2 {
+        font-family: 'Fraunces', serif;
+        font-weight: 500;
+        font-size: 36px;
+        line-height: 1.15;
+        margin: 0 0 12px 0;
+        letter-spacing: -0.005em;
+      }
+      h3 {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--ink-soft);
+        margin: 0 0 8px 0;
+      }
+      p, li { font-size: 19px; line-height: 1.55; }
+      .lede {
+        font-family: 'Fraunces', serif;
+        font-size: 26px;
+        line-height: 1.35;
+        font-weight: 400;
+        color: var(--ink);
+        max-width: 38ch;
+      }
+      .meta {
+        font-size: 13px;
+        color: var(--ink-soft);
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+      }
+      ul.clean { list-style: none; padding: 0; margin: 0; }
+      ul.clean li { padding: 10px 0; border-top: 1px solid var(--rule); }
+      ul.clean li:first-child { border-top: none; }
+      ul.dot li {
+        position: relative;
+        padding-left: 22px;
+        margin-bottom: 8px;
+      }
+      ul.dot li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.7em;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid var(--rule);
+        padding: 22px;
+        border-radius: 6px;
+      }
+      .card h4 {
+        font-family: 'Fraunces', serif;
+        font-size: 22px;
+        margin: 0 0 6px 0;
+        font-weight: 500;
+      }
+      .card p {
+        margin: 0;
+        font-size: 15px;
+        color: var(--ink-soft);
+        line-height: 1.5;
+      }
+      pre.code {
+        background: #1a1a1a;
+        color: #f0e8d8;
+        font-size: 13px;
+        line-height: 1.45;
+        padding: 22px;
+        border-radius: 6px;
+        overflow: auto;
+        max-height: 56vh;
+      }
+      .pill {
+        display: inline-block;
+        padding: 4px 12px;
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+        font-size: 13px;
+        margin-right: 6px;
+        margin-bottom: 6px;
+      }
+      .pill.accent {
+        background: var(--accent-soft);
+        border-color: var(--accent-soft);
+        color: var(--accent);
+      }
+      .rule {
+        height: 1px;
+        background: var(--rule);
+        margin: 24px 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+      th, td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--rule);
+        vertical-align: top;
+      }
+      th {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--ink-soft);
+      }
+      .accent-text { color: var(--accent); }
+      .nav {
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        background: rgba(247, 244, 237, 0.92);
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 13px;
+        color: var(--ink-soft);
+        backdrop-filter: blur(6px);
+      }
+      blockquote {
+        font-family: 'Fraunces', serif;
+        font-size: 30px;
+        line-height: 1.3;
+        font-style: italic;
+        color: var(--ink);
+        margin: 0;
+        padding-left: 24px;
+        border-left: 3px solid var(--accent);
+        max-width: 32ch;
+      }
+      .columns {
+        column-count: 2;
+        column-gap: 36px;
+      }
+      .columns p { font-size: 16px; line-height: 1.55; break-inside: avoid; }
+      @media (max-width: 720px) {
+        .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        .slide { padding: 56px 28px; }
+        .slide__num, .slide__chapter { left: 28px; right: 28px; top: 20px; }
+        .columns { column-count: 1; }
+      }
+      @media print {
+        body { background: white; }
+        .slide {
+          page-break-after: always;
+          min-height: auto;
+          height: 100vh;
+          border-bottom: none;
+        }
+        .nav { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="deck">
+
+      <!-- 1. Cover -->
+      <section class="slide">
+        <div class="slide__num">01 · Cover</div>
+        <span class="meta">Senior Director, Technical Success · Forward Deployed Engineer challenge</span>
+        <h1 class="title">Indexing the<br/>Pokédex with <em>Coveo</em>.</h1>
+        <p class="lede">A 25-minute deep dive on what I built, why I built it that way, and what it tells us about how to deploy Coveo in the field.</p>
+        <div class="rule"></div>
+        <div class="meta">Aziz Camara · Topic 1 of 2</div>
+      </section>
+
+      <!-- 2. The brief -->
+      <section class="slide">
+        <div class="slide__chapter">Brief</div>
+        <div class="slide__num">02</div>
+        <h2>The brief, in one breath.</h2>
+        <ul class="dot">
+          <li>Index <code>pokemondb.net</code>, <strong>Pokémon detail pages only</strong> (1,025 of them).</li>
+          <li>Build a search UI in Atomic <em>or</em> Headless. Type and Generation facets. Image-rich result cards.</li>
+          <li>Ship it: GitHub, public URL.</li>
+          <li>Optional: RGA, Query Suggest, detail page, Passage Retrieval.</li>
+        </ul>
+        <div class="rule"></div>
+        <p class="meta">I shipped Essential + Intermediate + Advanced + Bonus.</p>
+      </section>
+
+      <!-- 3. Six forks in the road -->
+      <section class="slide">
+        <div class="slide__chapter">Decisions</div>
+        <div class="slide__num">03</div>
+        <h2>Six forks in the road.</h2>
+        <table>
+          <thead><tr><th>Decision</th><th>Choice</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>UI framework</td><td><code>@coveo/atomic-react</code></td><td>Native Coveo + real React shell — supports the detail page and the Passage Retrieval widget without leaving Atomic.</td></tr>
+            <tr><td>Indexing</td><td>Web Crawler + Web Scraping Config</td><td>The challenge says "include only Pokémon pages." Inclusion regex + selector-based metadata is one JSON file.</td></tr>
+            <tr><td>Generation field</td><td>Indexing Pipeline Extension</td><td>Generation isn't a DOM node. National No. is. We map ranges in Python at index time.</td></tr>
+            <tr><td>Authentication</td><td><code>/api/token</code> Vercel Function</td><td>API key never reaches the browser. Engine renews tokens on 401.</td></tr>
+            <tr><td>RGA / QS</td><td>Both, on the <code>Pokedex</code> pipeline</td><td>One pipeline, two ML models, zero special-casing in the UI.</td></tr>
+            <tr><td>Hosting</td><td>GitHub + Vercel</td><td>Public URL in 60 s. Functions co-located with the SPA.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 4. Architecture diagram -->
+      <section class="slide">
+        <div class="slide__chapter">Architecture</div>
+        <div class="slide__num">04</div>
+        <h2>The whole system, on one slide.</h2>
+        <pre class="code">
+                ┌──────────────────────────┐
+                │  pokemondb.net (1,025    │
+                │  /pokedex/&lt;name&gt; pages)  │
+                └────────────┬─────────────┘
+                             │  Coveo Web Crawler
+                             │  + Web Scraping Config
+                             ▼
+                ┌──────────────────────────┐
+                │  Coveo Cloud index       │
+                │  source: pokedex-full    │
+                │  pipeline: Pokedex       │
+                │  hub: PokedexSearch      │
+                └─┬─────────┬─────────────┬┘
+     IPE derives  │         │             │
+   @generation    │         │ RGA model   │ QS model
+                  ▼         ▼             ▼
+              fields    generated       query
+              + facets  answers         suggestions
+                                │
+   ┌──────────── browser ───────┴─────────────────┐
+   │  React / Atomic React                         │
+   │  ┌────────────────┐  ┌──────────────────┐     │
+   │  │ SearchPage     │  │ PokemonDetail    │     │
+   │  │  - SearchBox   │  │  - Hero image    │     │
+   │  │  - Type facet  │  │  - Stats         │     │
+   │  │  - Gen facet   │  │  - Related list  │     │
+   │  │  - RGA answer  │  └──────────────────┘     │
+   │  │  - Result list │                           │
+   │  │  - Ask the     │                           │
+   │  │    Pokédex     │  /api/token /api/passages │
+   │  └────────────────┘  (Vercel server fns)      │
+   └──────────────────────┬────────────────────────┘
+                          │
+              ┌───────────┴───────────┐
+              │  Coveo platform APIs  │
+              │  /search/v2/token     │
+              │  /search/v2           │
+              │  /search/v3/passages  │
+              └───────────────────────┘
+</pre>
+      </section>
+
+      <!-- 5. Indexing — URL strategy -->
+      <section class="slide">
+        <div class="slide__chapter">Indexing · 1 of 3</div>
+        <div class="slide__num">05</div>
+        <h2>Two sources, one regex.</h2>
+        <div class="grid-2">
+          <div>
+            <h3>Sources</h3>
+            <ul class="clean">
+              <li><strong>pokedex-sandbox</strong> — start URL <code>/pokedex/bulbasaur</code>, no link following. Lets me iterate on the scraping config in 10 seconds.</li>
+              <li><strong>pokedex-full</strong> — start URL <code>/pokedex/national</code>, follows links matching the inclusion regex.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Inclusion / Exclusion</h3>
+            <pre class="code"># inclusion (regex)
+^https://pokemondb\.net/pokedex/[a-z0-9-]+$
+
+# exclusions (wildcard)
+/move/*
+/type/*
+/ability/*
+/item/*
+/evolution/*
+/stats/*
+/sprites/*
+/forms/*
+/location/*
+/pokedex/national
+/pokedex/stats/*</pre>
+          </div>
+        </div>
+        <p>Result: 1,025 documents, no junk.</p>
+      </section>
+
+      <!-- 6. Indexing — Web Scraping Config -->
+      <section class="slide">
+        <div class="slide__chapter">Indexing · 2 of 3</div>
+        <div class="slide__num">06</div>
+        <h2>Metadata extraction is one JSON file.</h2>
+        <pre class="code">[{
+  "name": "pokemon-page",
+  "for": { "urls": ["^https://pokemondb\\.net/pokedex/[a-z0-9-]+$"] },
+  "exclude": [
+    { "type": "CSS",
+      "path": "header, footer, nav, .breadcrumb, .resp-tab-content,
+               .infocard-list, .panel-pokedex-related, script, style" }
+  ],
+  "metadata": {
+    "pokemon_name":      { "type": "CSS",   "path": "h1::text" },
+    "pokemon_natdex":    { "type": "CSS",   "path": ".vitals-table strong::text" },
+    "pokemon_types":     { "type": "CSS",   "path": "a.type-icon::text" },
+    "pokemon_image":     { "type": "CSS",   "path": "main img.sm-block.img-fixed::attr(src)" },
+    "pokemon_species":   { "type": "XPATH",
+                            "path": "//th[normalize-space(text())='Species']/following-sibling::td/text()" },
+    "pokemon_height":    { "type": "XPATH",
+                            "path": "//th[normalize-space(text())='Height']/following-sibling::td/text()" },
+    "pokemon_weight":    { "type": "XPATH",
+                            "path": "//th[normalize-space(text())='Weight']/following-sibling::td/text()" },
+    "pokemon_abilities": { "type": "CSS",
+                            "path": ".vitals-table a[href*='/ability/']::text" }
+  }
+}]</pre>
+        <p class="meta">Stable XPath selectors (<code>//th[text()='Height']</code>) over fragile class names — survives DOM churn.</p>
+      </section>
+
+      <!-- 7. Indexing — Generation IPE -->
+      <section class="slide">
+        <div class="slide__chapter">Indexing · 3 of 3</div>
+        <div class="slide__num">07</div>
+        <h2>Generation, derived not extracted.</h2>
+        <div class="grid-2">
+          <div>
+            <p>pokemondb.net does not surface <em>Generation N</em> as a single DOM node. National No. <em>is</em> a stable cell. Generation ranges are canonical:</p>
+            <table>
+              <thead><tr><th>Range</th><th>Gen</th></tr></thead>
+              <tbody>
+                <tr><td>1 – 151</td><td>I</td></tr>
+                <tr><td>152 – 251</td><td>II</td></tr>
+                <tr><td>252 – 386</td><td>III</td></tr>
+                <tr><td>387 – 493</td><td>IV</td></tr>
+                <tr><td>494 – 649</td><td>V</td></tr>
+                <tr><td>650 – 721</td><td>VI</td></tr>
+                <tr><td>722 – 809</td><td>VII</td></tr>
+                <tr><td>810 – 905</td><td>VIII</td></tr>
+                <tr><td>906 – 1025</td><td>IX</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <pre class="code"># Indexing Pipeline Extension
+import re
+
+GEN_RANGES = [
+  (1,151,1),(152,251,2),(252,386,3),
+  (387,493,4),(494,649,5),(650,721,6),
+  (722,809,7),(810,905,8),(906,1025,9),
+]
+
+natdex = document.get_meta_data_value(
+    "pokemon_natdex"
+) or []
+m = re.search(r"\d+", str(natdex[0])) if natdex else None
+
+if m:
+  n = int(m.group(0))
+  for low, high, gen in GEN_RANGES:
+    if low &lt;= n &lt;= high:
+      document.add_meta_data(
+        {"pokemongeneration": str(gen)}
+      )
+      break</pre>
+            <p class="meta">Pure data layer. Re-run the IPE without re-crawling when a new generation drops.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. UI — Atomic React composition -->
+      <section class="slide">
+        <div class="slide__chapter">UI · 1 of 3</div>
+        <div class="slide__num">08</div>
+        <h2>Atomic React, composed.</h2>
+        <pre class="code">&lt;AtomicSearchInterface engine={engine}&gt;
+  &lt;AtomicSearchBox suggestionTimeout={500}&gt;
+    &lt;AtomicSearchBoxRecentQueries /&gt;
+    &lt;AtomicSearchBoxQuerySuggestions /&gt;
+  &lt;/AtomicSearchBox&gt;
+
+  &lt;AtomicLayoutSection section="facets"&gt;
+    &lt;AtomicFacet field="pokemontypes"      label="Type"       /&gt;
+    &lt;AtomicFacet field="pokemongeneration" label="Generation" sortCriteria="alphanumeric" /&gt;
+  &lt;/AtomicLayoutSection&gt;
+
+  &lt;AtomicLayoutSection section="main"&gt;
+    &lt;AtomicGeneratedAnswer /&gt;        {/* RGA */}
+    &lt;AtomicResultList template={ResultTemplate} /&gt;
+    &lt;AtomicLoadMoreResults /&gt;
+  &lt;/AtomicLayoutSection&gt;
+
+  &lt;AskPokedex /&gt;                   {/* Bonus: Passage Retrieval */}
+&lt;/AtomicSearchInterface&gt;</pre>
+        <p>Web components for the heavy plumbing. Plain JSX where I need it.</p>
+      </section>
+
+      <!-- 9. UI — custom result template -->
+      <section class="slide">
+        <div class="slide__chapter">UI · 2 of 3</div>
+        <div class="slide__num">09</div>
+        <h2>Result template — image first.</h2>
+        <pre class="code">function ResultTemplate(result: Result) {
+  const raw = result.raw as Record&lt;string, unknown&gt;;
+  const image      = raw.pokemonimage as string  | undefined;
+  const generation = raw.pokemongeneration as number | undefined;
+  const species    = raw.pokemonspecies as string | undefined;
+  const natdex     = raw.pokemonnatdex as string | undefined;
+
+  return (
+    &lt;article className="poke-card"&gt;
+      {image &amp;&amp; &lt;img src={image} alt={result.title} /&gt;}
+      &lt;div className="poke-card__body"&gt;
+        &lt;h3&gt;&lt;AtomicResultLink /&gt; &lt;span&gt;№ {natdex}&lt;/span&gt;&lt;/h3&gt;
+        &lt;AtomicResultMultiValueText field="pokemontypes" /&gt;
+        {generation != null &amp;&amp; &lt;GenerationBadge generation={generation} /&gt;}
+        {species &amp;&amp; &lt;span&gt;{species}&lt;/span&gt;}
+      &lt;/div&gt;
+    &lt;/article&gt;
+  );
+}</pre>
+        <p class="meta">Atomic primitives where they help (<code>AtomicResultLink</code>, <code>AtomicResultMultiValueText</code>). Plain HTML where they don't.</p>
+      </section>
+
+      <!-- 10. UI — token exchange security -->
+      <section class="slide">
+        <div class="slide__chapter">UI · 3 of 3</div>
+        <div class="slide__num">10</div>
+        <h2>The API key never reaches the browser.</h2>
+        <div class="grid-2">
+          <div>
+            <h3>The pattern</h3>
+            <ul class="dot">
+              <li>API key sits in Vercel env vars.</li>
+              <li><code>/api/token</code> exchanges it for a search token scoped to <code>PokedexSearch</code>.</li>
+              <li>Headless engine's <code>renewAccessToken</code> re-mints on 401.</li>
+              <li>Browser only ever holds short-lived tokens.</li>
+            </ul>
+          </div>
+          <div>
+            <pre class="code">// api/token.ts (Vercel Function)
+const url = `https://${orgId}.org.coveo.com
+              /rest/search/v2/token`;
+const upstream = await fetch(url, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${API_KEY}`,
+  },
+  body: JSON.stringify({
+    searchHub: 'PokedexSearch',
+    userIds: [{
+      name: 'pokedex-anonymous',
+      provider: 'Email Security Provider',
+      type: 'User',
+    }],
+  }),
+});</pre>
+          </div>
+        </div>
+        <p class="meta">This is the FDE-correct deployment pattern — and the right opener for a customer security review.</p>
+      </section>
+
+      <!-- 11. ML — RGA -->
+      <section class="slide">
+        <div class="slide__chapter">ML · 1 of 3</div>
+        <div class="slide__num">11</div>
+        <h2>Relevance Generative Answering, in three clicks.</h2>
+        <ul class="dot">
+          <li>Models → Add → <em>Relevance Generative Answering</em>.</li>
+          <li>Filter to <code>@source==pokedex-full</code>. The model only sees Pokémon pages.</li>
+          <li>Associate with the <code>Pokedex</code> query pipeline.</li>
+          <li>Front-end is already wired: <code>&lt;AtomicGeneratedAnswer /&gt;</code> lights up the moment the model is active.</li>
+        </ul>
+        <div class="rule"></div>
+        <p>Why this matters at a real customer: RGA is the natural answer for "how do I…" questions. The hard part is never the component — it's <em>which content</em> the model is allowed to ground on. The filter is the FDE control surface.</p>
+      </section>
+
+      <!-- 12. ML — Query Suggest -->
+      <section class="slide">
+        <div class="slide__chapter">ML · 2 of 3</div>
+        <div class="slide__num">12</div>
+        <h2>Query Suggestions, with the cold-start problem named.</h2>
+        <ul class="dot">
+          <li>QS models train on <strong>Coveo Usage Analytics</strong>. ~10,000 queries for "great", but you can ship sooner.</li>
+          <li>Sandbox path: <em>Test configuration mode</em> ON; seed UA by replaying ~30 curated queries against <code>/rest/search/v2</code>.</li>
+          <li>Production path: connect search hubs early, accept that the first 30 days the suggestions are mediocre — then accept ART (Auto-Relevance Tuning) joining QS on the same pipeline as the value compounds.</li>
+        </ul>
+        <div class="rule"></div>
+        <p class="meta">Naming the cold-start tradeoff in the deck — instead of pretending it's fully populated — is the FDE move.</p>
+      </section>
+
+      <!-- 13. ML — Pipeline statements -->
+      <section class="slide">
+        <div class="slide__chapter">ML · 3 of 3</div>
+        <div class="slide__num">13</div>
+        <h2>Pipeline statements as the relevance-tuning surface.</h2>
+        <pre class="code"># Boost legendary canon
+$qre(expression: '@pokemonname=="mewtwo" OR @pokemonname=="rayquaza" OR …',
+     modifier: '300')
+
+# Synonyms (reduce keyword fragility)
+@thesaurus("legendary" =&gt; "mewtwo, mew, lugia, ho-oh, rayquaza, dialga, …")
+@thesaurus("starter"   =&gt; "bulbasaur, charmander, squirtle, …")
+
+# Featured query — when the user types "pikachu" by name
+@featured(condition: 'when query is "pikachu"',
+          expression: '@pokemonname=="pikachu"', boost: '1000')</pre>
+        <p>Pipeline statements + ML models are the two surfaces a Technical Success team has to teach customers. They're complementary, not competing — statements are explicit business policy; models are observed behavior.</p>
+      </section>
+
+      <!-- 14. Bonus — Passage Retrieval -->
+      <section class="slide">
+        <div class="slide__chapter">Bonus · 1 of 2</div>
+        <div class="slide__num">14</div>
+        <h2>Ask the Pokédex.</h2>
+        <p class="lede">Why faceting alone is no longer enough.</p>
+        <div class="grid-2">
+          <div>
+            <p>Question: <em>"Which Gen 1 Pokémon has the highest Special Attack?"</em></p>
+            <p>The Type facet can't answer this. Even RGA on the result set is awkward — you'd have to sort, then narrow, then read.</p>
+            <p>The <strong>Passage Retrieval API</strong> answers it directly by ranking <em>passages</em>, not documents. The base-stats table from each Gen 1 entry gets weighted independently, and Mewtwo's row floats.</p>
+          </div>
+          <div>
+            <pre class="code">POST /rest/search/v3/passages/retrieve
+Authorization: Bearer &lt;token&gt;
+
+{
+  "query": "Which Gen 1 Pokémon has
+            the highest Special Attack?",
+  "searchHub": "PokedexQA",
+  "filter": "@source==\"pokedex-full\"",
+  "maxPassages": 5,
+  "additionalFields": [
+    "pokemonname", "pokemonimage",
+    "clickableuri"
+  ],
+  "localization": { "locale": "en-US" }
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 15. Bonus — why Passage Retrieval matters -->
+      <section class="slide">
+        <div class="slide__chapter">Bonus · 2 of 2</div>
+        <div class="slide__num">15</div>
+        <h2>Passage Retrieval is the substrate.</h2>
+        <blockquote>"Passage Retrieval is to agentic AI what the search index was to web search — the part the customer never sees, but the part everything else stands on."</blockquote>
+        <ul class="dot">
+          <li>Today: powers Coveo for Agentforce, the Atlas knowledge layer, and any "ground my LLM in our content" use case.</li>
+          <li>Tomorrow: every agentic feature the customer wants to build — copilots, action recommenders, deflection bots — calls this endpoint, not <code>/search/v2</code>.</li>
+          <li>FDE leverage: showing customers <em>this</em> endpoint is how we move them from "Coveo is our search" to "Coveo is our retrieval substrate."</li>
+        </ul>
+      </section>
+
+      <!-- 16. CSCX.AI anchor — 1 -->
+      <section class="slide">
+        <div class="slide__chapter">At scale · 1 of 3</div>
+        <div class="slide__num">16</div>
+        <h2>The enterprise customer? <em class="accent-text">Me.</em></h2>
+        <p class="lede">CSCX.AI is the Customer Success platform I'm building. Pokémon → Customer maps almost line-for-line. The challenge is also a free POC for our integration story.</p>
+        <ul class="dot">
+          <li>AI-native CS platform for VC-backed SaaS, 50–200 employees.</li>
+          <li>Replaces Gainsight ($30K+ ACV) and ChurnZero ($18K+) at $12K — but a Coveo-grade retrieval layer raises the ceiling.</li>
+          <li>Multi-tenant, Supabase + GCP Cloud Run, 118 routes in production.</li>
+        </ul>
+      </section>
+
+      <!-- 17. CSCX.AI anchor — 2 (mapping table) -->
+      <section class="slide">
+        <div class="slide__chapter">At scale · 2 of 3</div>
+        <div class="slide__num">17</div>
+        <h2>The same primitives, redrawn.</h2>
+        <table>
+          <thead><tr><th>Pokédex build</th><th>CSCX.AI deployment</th></tr></thead>
+          <tbody>
+            <tr><td>Web Crawler on <code>pokemondb.net</code></td><td>Push API on customer playbooks, ticket archives, internal notes, Salesforce articles</td></tr>
+            <tr><td>Type facet, Generation facet</td><td>Industry, ARR band, lifecycle stage, churn risk tier</td></tr>
+            <tr><td>Image-first result card</td><td>Account-first card with health-score sparkline + last-touch timestamp</td></tr>
+            <tr><td>RGA on the search page</td><td>"What should I do for this account?" — generative answer over <em>this customer's</em> data, with citations</td></tr>
+            <tr><td>Query Suggest</td><td>CSM-typed-question history, weighted by closed-won outcome</td></tr>
+            <tr><td>Passage Retrieval (Bonus)</td><td>Substrate behind CSCX.AI's CADG agent — context-aware document generation, the moat</td></tr>
+            <tr><td>Atomic React UI</td><td>Inline-embedded inside the CSM workspace via the same Atomic primitives</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 18. CSCX.AI anchor — 3 (commercial) -->
+      <section class="slide">
+        <div class="slide__chapter">At scale · 3 of 3</div>
+        <div class="slide__num">18</div>
+        <h2>Why this is a commercial story, not a hobby.</h2>
+        <ul class="dot">
+          <li>A Coveo-powered CSCX.AI sells at <strong>$30K+ ACV</strong> instead of the $12K floor — Gainsight-class price points.</li>
+          <li>CSCX.AI's customers are exactly Coveo's <em>next</em> ICP — VC-backed SaaS, 50–200 FTE, AI-native expectations, support volume but no Salesforce-tier budget.</li>
+          <li>I would carry this into the role: an FDE leader who has personally deployed Coveo at his own SaaS, and can coach AEs through the same conversation in front of customers.</li>
+        </ul>
+        <div class="rule"></div>
+        <blockquote>"Pick an enterprise customer who could benefit from a similar Coveo solution." — I picked the one whose roadmap I control.</blockquote>
+      </section>
+
+      <!-- 19. Lessons learned -->
+      <section class="slide">
+        <div class="slide__chapter">Lessons</div>
+        <div class="slide__num">19</div>
+        <h2>What I'd do with another week.</h2>
+        <ul class="dot">
+          <li><strong>Push, not Crawler, for half of it.</strong> The static parts of pokémondb (base stats, types) are perfect for the crawler. But for "live" data — Pokémon GO availability, smogon competitive tiers — Push gives me real-time, no recrawl. Showing both connectors side-by-side would be a stronger teaching artifact.</li>
+          <li><strong>Streamed RGA citations.</strong> The current RGA component is great as a black box. Streaming the citation events into a custom React component would let me demo "watch the model decide what to ground on," which is the conversation customers actually want.</li>
+          <li><strong>Properly seeded UA.</strong> I'd run a synthetic-user script for a week to give Query Suggest real data, then graph the model's Active → trained → relevant transition. Better demo, better honesty about ML cold-start.</li>
+        </ul>
+      </section>
+
+      <!-- 20. Close -->
+      <section class="slide">
+        <div class="slide__chapter">Close</div>
+        <div class="slide__num">20</div>
+        <h1 class="title">Demo, then <em>questions</em>.</h1>
+        <p class="lede">Switching to the live app on Vercel — let's break it together.</p>
+        <div class="rule"></div>
+        <div class="meta">Aziz Camara · azizcamara2@gmail.com · linkedin.com/in/aziz1904</div>
+      </section>
+
+    </div>
+
+    <div class="nav" id="nav">slide 1 / 20 · scroll or arrow keys</div>
+
+    <script>
+      const nav = document.getElementById('nav');
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      function update() {
+        const center = window.scrollY + window.innerHeight / 2;
+        let idx = 1;
+        for (let i = 0; i < slides.length; i++) {
+          const el = slides[i];
+          const top = el.offsetTop;
+          if (center >= top) idx = i + 1;
+        }
+        nav.textContent = `slide ${idx} / ${slides.length} · scroll or arrow keys`;
+      }
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
+          e.preventDefault();
+          const center = window.scrollY + window.innerHeight / 2;
+          const next = slides.find((s) => s.offsetTop > center + 100);
+          if (next) next.scrollIntoView({ behavior: 'smooth' });
+        }
+        if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+          e.preventDefault();
+          const center = window.scrollY + window.innerHeight / 2;
+          const prev = [...slides].reverse().find((s) => s.offsetTop < center - 100);
+          if (prev) prev.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+      update();
+    </script>
+  </body>
+</html>

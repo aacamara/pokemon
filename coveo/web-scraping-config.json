@@ -1,0 +1,48 @@
+[
+  {
+    "name": "pokemon-page",
+    "for": {
+      "urls": ["^https://pokemondb\\.net/pokedex/[a-z0-9-]+$"]
+    },
+    "exclude": [
+      {
+        "type": "CSS",
+        "path": "header, footer, nav, .breadcrumb, .resp-tab-content, .infocard-list, .panel-pokedex-related, script, style"
+      }
+    ],
+    "metadata": {
+      "pokemonname": {
+        "type": "CSS",
+        "path": "h1::text"
+      },
+      "pokemonnatdex": {
+        "type": "CSS",
+        "path": ".vitals-table strong::text"
+      },
+      "pokemontypes": {
+        "type": "CSS",
+        "path": "a.type-icon::text"
+      },
+      "pokemonspecies": {
+        "type": "XPATH",
+        "path": "//th[normalize-space(text())='Species']/following-sibling::td/text()"
+      },
+      "pokemonheight": {
+        "type": "XPATH",
+        "path": "//th[normalize-space(text())='Height']/following-sibling::td/text()"
+      },
+      "pokemonweight": {
+        "type": "XPATH",
+        "path": "//th[normalize-space(text())='Weight']/following-sibling::td/text()"
+      },
+      "pokemonabilities": {
+        "type": "CSS",
+        "path": ".vitals-table a[href*='/ability/']::text"
+      },
+      "pokemonimage": {
+        "type": "CSS",
+        "path": "main img.sm-block.img-fixed::attr(src)"
+      }
+    }
+  }
+]
