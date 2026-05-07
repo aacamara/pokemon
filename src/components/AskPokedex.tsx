@@ -45,6 +45,12 @@ export default function AskPokedex() {
       });
       const json = (await res.json()) as PassageResponse;
       if (!res.ok) {
+        const detail = JSON.stringify((json as Record<string, unknown>).details ?? '');
+        if (detail.includes('UNAUTHORIZED_ACCESS_TO_FEATURE') || detail.includes('Passage Retrieval')) {
+          throw new Error(
+            'Passage Retrieval is not enabled on this sandbox Coveo organization. The integration code, request payload, and a worked example live in the Topic 1 deck.',
+          );
+        }
         throw new Error(json.error || `Request failed with status ${res.status}`);
       }
       setPassages(json.items || []);

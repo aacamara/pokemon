@@ -1,11 +1,13 @@
 import { AtomicResultLink } from '@coveo/atomic-react';
 import type { Result } from '@coveo/headless';
 import GenerationBadge from './GenerationBadge';
-import { dedupePreserveOrder, generationFromNatdex } from '../coveo/derive';
+import { dedupePreserveOrder, generationFromNatdex, pokedexArtworkUrl } from '../coveo/derive';
 
 export default function ResultTemplate(result: Result) {
   const raw = result.raw as Record<string, unknown>;
-  const image = raw.pokemonimage as string | undefined;
+  const image =
+    (raw.pokemonimage as string | undefined) ??
+    pokedexArtworkUrl(raw.pokemonname as string | undefined, result.uri);
   const species = raw.pokemonspecies as string | undefined;
   const natdex = raw.pokemonnatdex as string | undefined;
   const types = dedupePreserveOrder(raw.pokemontypes as string[] | undefined);

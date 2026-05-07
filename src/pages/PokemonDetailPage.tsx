@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchSearchToken } from '../coveo/tokenClient';
-import { dedupePreserveOrder, generationFromNatdex } from '../coveo/derive';
+import { dedupePreserveOrder, generationFromNatdex, pokedexArtworkUrl } from '../coveo/derive';
 import GenerationBadge from '../components/GenerationBadge';
 
 type SearchResult = {
@@ -119,9 +119,12 @@ export default function PokemonDetailPage() {
     <article className="poke-detail">
       <Link to="/" className="poke-detail__back">← Back to search</Link>
       <header className="poke-detail__hero">
-        {(r.pokemonimage as string | undefined) && (
-          <img src={r.pokemonimage as string} alt={pokemon.title} />
-        )}
+        {(() => {
+          const img =
+            (r.pokemonimage as string | undefined) ??
+            pokedexArtworkUrl(r.pokemonname as string | undefined, pokemon.uri);
+          return img ? <img src={img} alt={pokemon.title} /> : null;
+        })()}
         <div>
           <h1>{pokemon.title}</h1>
           {(r.pokemonnatdex as string | undefined) && (
@@ -163,7 +166,9 @@ export default function PokemonDetailPage() {
             {related.map((rel) => {
               const rr = rel.raw as Record<string, unknown>;
               const relName = rr.pokemonname as string | undefined;
-              const relImg = rr.pokemonimage as string | undefined;
+              const relImg =
+                (rr.pokemonimage as string | undefined) ??
+                pokedexArtworkUrl(relName, rel.uri);
               if (!relName) return null;
               return (
                 <li key={rel.uri}>
