@@ -1,6 +1,6 @@
 # Coveo Pokédex — Forward Deployed Engineer Challenge
 
-This is my submission for the **Senior Director, Technical Success**
+This is my submission for the **Forward Deployed Engineer (FDE)**
 take-home challenge ("Pokémon Challenge"). It is a production-shaped Coveo
 implementation that crawls [pokemondb.net](https://pokemondb.net), exposes a
 search UI built with `@coveo/atomic-react`, and layers on Relevance

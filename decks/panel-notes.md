@@ -1,6 +1,6 @@
 # Panel Prep — Coveo FDE Technical Challenge
 
-**Role:** Senior Director, Technical Success
+**Role:** Forward Deployed Engineer (FDE)
 **Format:** 25 minutes per topic, including Q&A.
 **Mode:** Quick kickoff, lead handed to you. The panel will interrupt with questions
 during both topics. *You manage your own time.*
@@ -241,7 +241,7 @@ in slides.
 > points — instead of the $12K floor I'm anchoring at today. CSCX.AI's
 > ICP is exactly Coveo's *next* ICP: VC-backed SaaS, 50–200 FTE,
 > AI-native expectations, support volume but no Salesforce-tier budget.
-> I'd carry that into the role: an FDE leader who has personally
+> I'd carry that into the role: an FDE who has personally
 > deployed Coveo at his own SaaS and can coach AEs through the same
 > conversation in front of customers."
 
@@ -591,7 +591,7 @@ panel open in a second tab — you'll show it during the security beat.
 > to excellence' email at 3 AM, so I know what trust feels like
 > from both sides of the war room."
 >
-> "Last line: 'a Director of Technical Success is in the room
+> "Last line: 'a Forward Deployed Engineer is in the room
 > *before* the page fires, not after.' That's how I'd run this
 > function."
 

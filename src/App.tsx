@@ -31,7 +31,7 @@ export default function App() {
         <span>
           Built with <code>@coveo/atomic-react</code> · indexed via the Coveo Web Crawler
         </span>
-        <span>Aziz Camara — Senior Director, Technical Success challenge</span>
+        <span>Aziz Camara — Forward Deployed Engineer challenge</span>
       </footer>
     </div>
   );
