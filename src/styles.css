@@ -206,10 +206,43 @@ code {
   font-weight: 500;
 }
 .poke-card__types {
-  font-size: 14px;
-  color: var(--ink-soft);
-  text-transform: capitalize;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
+.poke-card__types li {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--ink);
+}
+
+/* Pokémon type palette — pills get a consistent color per type. */
+.type-normal   { background: #a8a77a; }
+.type-fire     { background: #ee8130; }
+.type-water    { background: #6390f0; }
+.type-electric { background: #f7d02c; color: #1a1a1a; }
+.type-grass    { background: #7ac74c; }
+.type-ice      { background: #96d9d6; color: #1a1a1a; }
+.type-fighting { background: #c22e28; }
+.type-poison   { background: #a33ea1; }
+.type-ground   { background: #e2bf65; color: #1a1a1a; }
+.type-flying   { background: #a98ff3; }
+.type-psychic  { background: #f95587; }
+.type-bug      { background: #a6b91a; }
+.type-rock     { background: #b6a136; }
+.type-ghost    { background: #735797; }
+.type-dragon   { background: #6f35fc; }
+.type-dark     { background: #705746; }
+.type-steel    { background: #b7b7ce; color: #1a1a1a; }
+.type-fairy    { background: #d685ad; }
 .poke-card__meta {
   display: flex;
   gap: 8px;
@@ -406,8 +439,10 @@ code {
   color: #fff;
   font-size: 13px;
   font-weight: 600;
-  text-transform: capitalize;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
+/* Color pills on detail page reuse the .type-* classes set on each <li>. */
 .poke-detail__species {
   margin: 0;
   color: var(--ink-soft);

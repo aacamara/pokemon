@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchSearchToken } from '../coveo/tokenClient';
+import { dedupePreserveOrder, generationFromNatdex } from '../coveo/derive';
 import GenerationBadge from '../components/GenerationBadge';
 
 type SearchResult = {
@@ -108,9 +109,11 @@ export default function PokemonDetailPage() {
   if (!pokemon) return null;
 
   const r = pokemon.raw as Record<string, unknown>;
-  const types = (r.pokemontypes as string[] | undefined) ?? [];
-  const abilities = (r.pokemonabilities as string[] | undefined) ?? [];
-  const generation = r.pokemongeneration as number | undefined;
+  const types = dedupePreserveOrder(r.pokemontypes as string[] | undefined);
+  const abilities = dedupePreserveOrder(r.pokemonabilities as string[] | undefined);
+  const generation =
+    (r.pokemongeneration as number | undefined) ??
+    generationFromNatdex(r.pokemonnatdex as string | undefined);
 
   return (
     <article className="poke-detail">

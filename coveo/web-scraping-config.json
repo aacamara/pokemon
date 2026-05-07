@@ -17,11 +17,11 @@
       },
       "pokemonnatdex": {
         "type": "XPATH",
-        "path": "(//th[normalize-space(text())='National №']/following-sibling::td/strong/text())[1]"
+        "path": "(//th[contains(normalize-space(text()),'National')]/following-sibling::td/strong/text())[1]"
       },
       "pokemontypes": {
         "type": "XPATH",
-        "path": "//th[normalize-space(text())='Type']/following-sibling::td//a[contains(@href,'/type/')]/text()"
+        "path": "(//th[normalize-space(text())='Type']/following-sibling::td)[1]//a[contains(@href,'/type/')]/text()"
       },
       "pokemonspecies": {
         "type": "XPATH",
@@ -37,11 +37,11 @@
       },
       "pokemonabilities": {
         "type": "XPATH",
-        "path": "//th[normalize-space(text())='Abilities']/following-sibling::td//a[contains(@href,'/ability/')]/text()"
+        "path": "(//th[normalize-space(text())='Abilities']/following-sibling::td)[1]//a[contains(@href,'/ability/')]/text()"
       },
       "pokemonimage": {
-        "type": "CSS",
-        "path": "main img.sm-block.img-fixed::attr(src)"
+        "type": "XPATH",
+        "path": "(//img[contains(@src,'img.pokemondb.net/artwork/')]/@src)[1]"
       }
     }
   }
