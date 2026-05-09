@@ -34,7 +34,7 @@ during both topics. *You manage your own time.*
 
 | Requirement | Status | Notes for the panel |
 | --- | --- | --- |
-| Deploy Coveo RGA | ✅ | Model provisioned, filter `@source=="pokedex-push"`, associated with `Pokedex` pipeline. `<atomic-generated-answer />` lights up on the live page. |
+| Deploy Coveo RGA | ⚠️ License-gated | Trial-org tier doesn't include RGA — provisioning the model in Admin requires a sales contact. The `<atomic-generated-answer />` component is wired in `SearchPage.tsx` end-to-end; the moment the org has the license, no code change is needed. **Talk track: "two ML features in the deck need a license tier upgrade — RGA and Passage Retrieval. The integration code is shipped for both."** |
 | Preload Query Suggest model | ✅ | Model provisioned in **Test Configuration Mode**, associated with `Pokedex` pipeline, seeded with ~30 curated queries via the Search API. Suggestions show in the search box. |
 | Pokémon Detail Page | ✅ | `/pokemon/:name` route — `src/pages/PokemonDetailPage.tsx` |
 | Two topics presentation | ✅ | Both decks shipped |
@@ -43,16 +43,17 @@ during both topics. *You manage your own time.*
 
 | Requirement | Status | Notes |
 | --- | --- | --- |
-| Passage Retrieval API integration | ⚠️ | Built end-to-end (`api/passages.ts`, `<AskPokedex />` widget). Feature not licensed on the trial-org tier — UI shows graceful "not enabled on this sandbox" message. Code, request payload, and a worked example are in Topic 1 deck slides 14–15. *To enable in production: license-tier upgrade.* |
+| Passage Retrieval API integration | ⚠️ License-gated | Built end-to-end (`api/passages.ts`, `<AskPokedex />` widget). Trial-org tier doesn't include the feature; live calls return `UNAUTHORIZED_ACCESS_TO_FEATURE` and the UI shows a graceful message. Code, request payload, and a worked example are in Topic 1 deck slides 14–15. |
 
 ### How to *justify* what's incomplete (per the brief: "If you choose not to include a section, justify your choice")
 
-> "Essential through Advanced ship complete. The Bonus — Passage Retrieval —
-> is integrated end-to-end in code, but the trial-org's licensing tier
-> doesn't include the feature. The UI handles the 403 gracefully so the
-> panel sees the architecture even though the live call returns
-> `UNAUTHORIZED_ACCESS_TO_FEATURE`. To enable, we upgrade the license; the
-> integration is otherwise ready."
+> "Essential and Intermediate ship complete. Within Advanced, RGA is wired
+> end-to-end but the trial-org tier doesn't include the model — that's a
+> license-tier upgrade, not a code gap. Same story for the Bonus —
+> Passage Retrieval. Both UIs handle the 403 gracefully so the panel can
+> see the architecture; the moment the license is upgraded, both light up
+> with no code change. The integration code, the request payloads, and
+> the architectural rationale are all in the Topic 1 deck."
 
 ---
 
@@ -378,6 +379,16 @@ panel open in a second tab — you'll show it during the security beat.
 > Push was a 90-minute alternative that produced cleaner data. The right
 > trade. I'd file the support ticket on day-one of the role, but I
 > wouldn't have shipped a half-broken demo to find out."
+
+**Q: Why isn't RGA running in the live demo?**
+> "RGA isn't included in this trial-org's license tier — provisioning the
+> model in Admin requires a sales engagement. Same story for Passage
+> Retrieval. The integration code is shipped end-to-end on both: the
+> `<atomic-generated-answer>` component in SearchPage.tsx, the
+> `/api/passages` Vercel function, the request payloads in the deck. The
+> moment the license is upgraded, both light up with no code change. I
+> chose to ship the architecture honestly — including the 403 — rather
+> than show a faked screenshot."
 
 **Q: How do you handle the cold-start on Query Suggest?**
 > "Test Configuration Mode plus ~30 seeded queries via the search API to

@@ -917,12 +917,12 @@ const upstream = await fetch(url, {
   <span class="brand-mark">AC</span>
   <span class="chapter">ML · 1 of 3</span>
   <div class="slide-content">
-    <h2 class="reveal">Relevance Generative Answering, in three clicks.</h2>
+    <h2 class="reveal">Relevance Generative Answering, in three clicks <em>(if licensed)</em>.</h2>
     <ul class="dot reveal">
       <li>Models → Add → <em>Relevance Generative Answering</em>.</li>
-      <li>Filter to <code>@source==pokedex-full</code>. The model only sees Pokémon pages.</li>
+      <li>Filter to <code>@source=="pokedex-push"</code>. The model only sees Pokémon docs.</li>
       <li>Associate with the <code>Pokedex</code> query pipeline.</li>
-      <li>Front-end is already wired: <code>&lt;AtomicGeneratedAnswer /&gt;</code> lights up the moment the model is active.</li>
+      <li>Front-end is already wired: <code>&lt;AtomicGeneratedAnswer /&gt;</code> lights up the moment the model is Active. <strong>This trial-org tier doesn't include RGA — license-gated, like Passage Retrieval. Code is shipped.</strong></li>
     </ul>
     <div class="rule reveal"></div>
     <p class="reveal stat-block">Why this matters at a real customer: RGA is the natural answer for "how do I…" questions. The hard part is never the component — it's <em>which content</em> the model is allowed to ground on. The filter is the FDE control surface.</p>
