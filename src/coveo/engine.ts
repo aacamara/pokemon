@@ -1,4 +1,4 @@
-import { buildSearchEngine } from '@coveo/headless';
+import { buildSearchEngine, loadAdvancedSearchQueryActions } from '@coveo/headless';
 import type { SearchEngine } from '@coveo/headless';
 import { fetchSearchToken } from './tokenClient';
 
@@ -16,9 +16,15 @@ const POKEMON_FIELDS = [
   'pokemongeneration',
 ] as const;
 
+// Constrain every query to the PokéAPI-fed Push source. The legacy
+// `pokedex-full` (Web Crawler) source still exists for narrative context in
+// the deck — but the Push source has cleaner metadata and is what the UI
+// queries. See the "two connectors" slide for why we keep both.
+const POKEDEX_CONSTANT_QUERY = '@source=="pokedex-push"';
+
 export async function createPokedexEngine(): Promise<SearchEngine> {
   const { token, organizationId } = await fetchSearchToken();
-  return buildSearchEngine({
+  const engine = buildSearchEngine({
     configuration: {
       accessToken: token,
       organizationId,
@@ -33,6 +39,12 @@ export async function createPokedexEngine(): Promise<SearchEngine> {
       },
     },
   });
+
+  // Register a server-side `cq` so every search is scoped to the Push source.
+  const { registerAdvancedSearchQueries } = loadAdvancedSearchQueryActions(engine);
+  engine.dispatch(registerAdvancedSearchQueries({ cq: POKEDEX_CONSTANT_QUERY }));
+
+  return engine;
 }
 
 export { POKEMON_FIELDS };
