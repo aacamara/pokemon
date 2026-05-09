@@ -15,13 +15,13 @@ during both topics. *You manage your own time.*
 | --- | --- | --- |
 | Accept Coveo Cloud Org invitation | ✅ | Org `azizfdepokemontestfhlqf1jz` |
 | Install Atomic or Headless locally | ✅ | `@coveo/atomic-react` 3.1.7 + `@coveo/headless` 3.4.1 |
-| Index `pokemondb.net` using Cloud Platform | ✅ | Source `pokedex-full`, 1,027 indexed |
-| Include only Pokémon pages (exclude Moves, Types, etc.) | ✅ | Address-pattern regex `^https://pokemondb\.net/pokedex/[a-z0-9-]+/?$` |
-| Webcrawler **or** Push source | ✅ | Webcrawler (V2) — see deck slide 5–7 |
+| Index pokémondb (or equivalent) using Cloud Platform | ✅ | **Three sources**: `pokedex-sandbox` (1 doc, iteration), `pokedex-full` (Web Crawler, 1,027 docs), `pokedex-push` (Push API, 1,025 docs from PokéAPI). UI queries the Push source. |
+| Include only Pokémon pages (exclude Moves, Types, etc.) | ✅ | Address-pattern regex on the Crawler; strict `id ∈ [1, 1025]` on the Push source. |
+| Webcrawler **or** Push source | ✅ | **Both shipped.** Crawler narrates the take-home brief; Push solves the metadata gaps the V2 crawler couldn't. |
 | Connect local search page to cloud endpoint | ✅ | `src/coveo/engine.ts` + `/api/token` |
 | Facet by Pokémon Type | ✅ | Live, 18 types with real counts |
-| Facet by Pokémon Generation | ⚠️ | Built; Coveo V2 crawler silently dropped 5 XPath variants for natdex. Strong "lessons learned" slide. |
-| Display Pokémon's picture in search result | ✅ | Client-side derivation from URL slug (`img.pokemondb.net/artwork/<slug>.jpg`) — robust fallback |
+| Facet by Pokémon Generation | ✅ | Live, 9 generations summing to 1,025 — fixed by switching to Push source. |
+| Display Pokémon's picture in search result | ✅ | PokéAPI artwork URL on every doc (canonical). Client-side derivation kept as a safety net. |
 
 ### Pokémon Challenge — Intermediate (✅ all required, all done)
 
@@ -34,8 +34,8 @@ during both topics. *You manage your own time.*
 
 | Requirement | Status | Notes for the panel |
 | --- | --- | --- |
-| Deploy Coveo RGA | ⚠️ | `<atomic-generated-answer />` is wired in `SearchPage.tsx`. Model not provisioned in this sandbox — Talk track: "two clicks in Admin Console: Models → Add → RGA → filter `@source==pokedex-full` → associate with Pokedex pipeline. The component lights up the moment the model is Active." Don't pretend it's running; show the architecture. |
-| Preload Query Suggest model | ⚠️ | `<atomic-search-box-query-suggestions />` wired. Same: model not provisioned, sandbox needs Test Configuration Mode + ~30 seeded queries to bootstrap. Talk through cold-start tradeoff. |
+| Deploy Coveo RGA | ✅ | Model provisioned, filter `@source=="pokedex-push"`, associated with `Pokedex` pipeline. `<atomic-generated-answer />` lights up on the live page. |
+| Preload Query Suggest model | ✅ | Model provisioned in **Test Configuration Mode**, associated with `Pokedex` pipeline, seeded with ~30 curated queries via the Search API. Suggestions show in the search box. |
 | Pokémon Detail Page | ✅ | `/pokemon/:name` route — `src/pages/PokemonDetailPage.tsx` |
 | Two topics presentation | ✅ | Both decks shipped |
 
@@ -43,17 +43,16 @@ during both topics. *You manage your own time.*
 
 | Requirement | Status | Notes |
 | --- | --- | --- |
-| Passage Retrieval API integration | ⚠️ | Built end-to-end (`api/passages.ts`, `<AskPokedex />` widget). Feature not licensed on the sandbox tier — UI shows graceful "not enabled on this sandbox" message. Code, request payload, and a worked example are in Topic 1 deck slides 14–15. |
+| Passage Retrieval API integration | ⚠️ | Built end-to-end (`api/passages.ts`, `<AskPokedex />` widget). Feature not licensed on the trial-org tier — UI shows graceful "not enabled on this sandbox" message. Code, request payload, and a worked example are in Topic 1 deck slides 14–15. *To enable in production: license-tier upgrade.* |
 
 ### How to *justify* what's incomplete (per the brief: "If you choose not to include a section, justify your choice")
 
-> "I shipped Essential and Intermediate fully. For Advanced and Bonus, I built
-> the integration code end-to-end and wired the components on the front-end —
-> but I deliberately deferred the model-provisioning steps in the Coveo Admin
-> Console because I thought time was better spent on the architecture story
-> behind each feature than on a 30-minute model-training wait. That story is
-> what I'd be selling at customer scale anyway. The two-click admin
-> provisioning is itself a slide."
+> "Essential through Advanced ship complete. The Bonus — Passage Retrieval —
+> is integrated end-to-end in code, but the trial-org's licensing tier
+> doesn't include the feature. The UI handles the 403 gracefully so the
+> panel sees the architecture even though the live call returns
+> `UNAUTHORIZED_ACCESS_TO_FEATURE`. To enable, we upgrade the license; the
+> integration is otherwise ready."
 
 ---
 
@@ -362,11 +361,23 @@ panel open in a second tab — you'll show it during the security beat.
 > Headless on bare React would be more code for components Atomic gives
 > me for free. Plain Atomic would block the React-only routes."
 
-**Q: Why Web Crawler over Push API?**
-> "The challenge is 'index a site.' That's exactly Web Crawler's job and
-> exactly the muscle FDEs teach customers. The trade-off: I lose the
-> ability to push live data — Smogon competitive tiers, Pokémon GO
-> availability. With another week I'd run both connectors side by side."
+**Q: Why Web Crawler *and* Push API — why both?**
+> "Original plan was Crawler-only. The V2 crawler silently failed to
+> extract a stable National Pokédex No. across five XPath variants.
+> Rather than keep wrestling the crawler, I shipped a Push source backed
+> by PokéAPI's clean JSON in 90 minutes. The Crawler stays — it tells the
+> take-home story exactly as the brief specified — and the Push source
+> ships clean metadata. Two connectors, one index, the UI queries the
+> Push source. The lesson is *that's* the FDE move: when the connector
+> hits a wall, switch connectors, don't keep grinding."
+
+**Q: Why didn't you fix the crawler?**
+> "Tried five XPath variants over three rebuild cycles — the V2 crawler
+> silently dropped them with no error. Without a Coveo Support call to
+> diagnose the engine quirk I'd have spent another half-day debugging.
+> Push was a 90-minute alternative that produced cleaner data. The right
+> trade. I'd file the support ticket on day-one of the role, but I
+> wouldn't have shipped a half-broken demo to find out."
 
 **Q: How do you handle the cold-start on Query Suggest?**
 > "Test Configuration Mode plus ~30 seeded queries via the search API to
